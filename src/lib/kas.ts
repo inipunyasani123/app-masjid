@@ -1,0 +1,131 @@
+// Laporan kas rekaan yang selalu "terkini": dibangkitkan dari tanggal hari ini (WIB) dengan angka acak berbenih,
+// jadi angka untuk satu tanggal selalu sama di setiap perangkat.
+import { hariDalamPekan, jumlahHari, type Tgl } from './waktu';
+
+export type Entri = { tgl: Tgl; ket: string; kategori: string; jumlah: number; masuk: boolean };
+export type LaporanBulan = {
+  y: number;
+  m: number;
+  saldoAwal: number;
+  masuk: number;
+  keluar: number;
+  saldoAkhir: number;
+  entri: Entri[];
+  kategori: { nama: string; masuk: boolean; jumlah: number }[];
+  berjalan: boolean;
+};
+
+function acak(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const bulat = (n: number, ke = 5000) => Math.round(n / ke) * ke;
+const antara = (r: () => number, a: number, b: number, ke = 5000) => bulat(a + r() * (b - a), ke);
+
+const JANGKAR = { y: 2026, m: 1, saldo: 36_400_000 };
+
+function urutBulan(y: number, m: number) {
+  return y * 12 + (m - 1);
+}
+
+export function entriBulan(y: number, m: number, sampai?: Tgl, kampanye?: { y: number; m: number }): Entri[] {
+  const r = acak(y * 100 + m);
+  const n = jumlahHari(y, m);
+  const e: Entri[] = [];
+  const tambah = (d: number, ket: string, kategori: string, jumlah: number, masuk: boolean) => {
+    if (sampai && (y > sampai.y || (y === sampai.y && (m > sampai.m || (m === sampai.m && d > sampai.d))))) return;
+    e.push({ tgl: { y, m, d }, ket, kategori, jumlah, masuk });
+  };
+  const idx = urutBulan(y, m);
+  const renovasi = kampanye ? idx >= urutBulan(kampanye.y, kampanye.m) : false;
+
+  tambah(1, 'Honor marbot (2 orang)', 'Honor & insentif', 2_500_000, false);
+  tambah(1, 'Insentif pengajar TPQ (4 orang)', 'Honor & insentif', 1_600_000, false);
+  tambah(1, 'Insentif imam rawatib', 'Honor & insentif', 1_200_000, false);
+  tambah(1, 'Insentif muazin (2 orang)', 'Honor & insentif', 800_000, false);
+  tambah(5, 'Tagihan listrik PLN', 'Listrik & air', antara(r, 1_120_000, 1_460_000, 1000), false);
+  tambah(7, 'Tagihan air PDAM', 'Listrik & air', antara(r, 175_000, 265_000, 1000), false);
+  tambah(10, 'Sabun, karbol, dan alat kebersihan', 'Kebersihan', antara(r, 210_000, 460_000, 1000), false);
+
+  let jumatKe = 0;
+  for (let d = 1; d <= n; d++) {
+    const h = hariDalamPekan({ y, m, d });
+    if (h === 5) {
+      jumatKe++;
+      tambah(d, `Kotak amal Jumat pekan ke-${jumatKe}`, 'Kotak amal', antara(r, 1_250_000, 2_450_000), true);
+      tambah(d, 'Transport khatib Jumat', 'Honor & insentif', 250_000, false);
+    }
+    if (h === 0) {
+      tambah(d, 'Rekap kotak amal harian', 'Kotak amal', antara(r, 250_000, 520_000), true);
+      tambah(d, 'Konsumsi kajian Ahad pagi', 'Konsumsi kajian', antara(r, 160_000, 320_000, 1000), false);
+    }
+  }
+  tambah(15, 'Infak transfer dan QRIS (rekap)', 'Infak transfer', antara(r, 700_000, 1_700_000), true);
+  tambah(Math.min(28, n), 'Infak transfer dan QRIS (rekap)', 'Infak transfer', antara(r, 450_000, 1_250_000), true);
+
+  if (renovasi) {
+    tambah(12, 'Donasi renovasi tempat wudu putri', 'Donasi renovasi', antara(r, 2_400_000, 6_200_000), true);
+    tambah(26, 'Donasi renovasi tempat wudu putri', 'Donasi renovasi', antara(r, 1_200_000, 3_800_000), true);
+    tambah(18, 'Material renovasi: keramik, pipa, kran', 'Renovasi', antara(r, 3_600_000, 6_900_000), false);
+  }
+  if (m % 3 === 1) {
+    tambah(Math.min(8, n), 'Penyaluran santunan yatim dan duafa', 'Santunan', 2_600_000, false);
+    tambah(3, 'Infak program santunan', 'Infak transfer', antara(r, 1_800_000, 2_900_000), true);
+  }
+  if (m % 6 === 4) tambah(20, 'Servis pengeras suara dan kipas angin', 'Perawatan', antara(r, 1_900_000, 3_400_000), false);
+
+  return e.sort((a, b) => a.tgl.d - b.tgl.d || Number(b.masuk) - Number(a.masuk));
+}
+
+function ringkas(entri: Entri[]) {
+  let masuk = 0, keluar = 0;
+  const kat = new Map<string, { nama: string; masuk: boolean; jumlah: number }>();
+  for (const x of entri) {
+    if (x.masuk) masuk += x.jumlah; else keluar += x.jumlah;
+    const k = `${x.masuk ? '+' : '-'}${x.kategori}`;
+    const ada = kat.get(k) || { nama: x.kategori, masuk: x.masuk, jumlah: 0 };
+    ada.jumlah += x.jumlah;
+    kat.set(k, ada);
+  }
+  return { masuk, keluar, kategori: [...kat.values()].sort((a, b) => b.jumlah - a.jumlah) };
+}
+
+/** Kampanye renovasi wudu selalu "dimulai" tiga bulan sebelum bulan berjalan. */
+export function awalKampanye(hariIni: Tgl) {
+  const i = urutBulan(hariIni.y, hariIni.m) - 3;
+  return { y: Math.floor(i / 12), m: (i % 12) + 1 };
+}
+
+export function laporanKas(hariIni: Tgl, banyak = 6): LaporanBulan[] {
+  const kampanye = awalKampanye(hariIni);
+  const akhir = urutBulan(hariIni.y, hariIni.m);
+  let saldo = JANGKAR.saldo;
+  const hasil: LaporanBulan[] = [];
+  for (let i = urutBulan(JANGKAR.y, JANGKAR.m); i <= akhir; i++) {
+    const y = Math.floor(i / 12), m = (i % 12) + 1;
+    const berjalan = i === akhir;
+    const entri = entriBulan(y, m, berjalan ? hariIni : undefined, kampanye);
+    const s = ringkas(entri);
+    const lap: LaporanBulan = { y, m, saldoAwal: saldo, masuk: s.masuk, keluar: s.keluar, saldoAkhir: saldo + s.masuk - s.keluar, entri, kategori: s.kategori, berjalan };
+    saldo = lap.saldoAkhir;
+    if (i > akhir - banyak) hasil.push(lap);
+  }
+  return hasil;
+}
+
+/** Dana renovasi wudu yang sudah terkumpul (dasar + donasi sejak awal kampanye sampai hari ini). */
+export function terkumpulRenovasi(hariIni: Tgl, dasar: number) {
+  const k = awalKampanye(hariIni);
+  let total = dasar;
+  for (let i = urutBulan(k.y, k.m); i <= urutBulan(hariIni.y, hariIni.m); i++) {
+    const y = Math.floor(i / 12), m = (i % 12) + 1;
+    for (const x of entriBulan(y, m, hariIni, k)) if (x.kategori === 'Donasi renovasi') total += x.jumlah;
+  }
+  return total;
+}

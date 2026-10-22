@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /(tabs)/
+Disallow: /_sitemap
+
+Sitemap: https://app-masjid.pintuweb.id/sitemap.xml

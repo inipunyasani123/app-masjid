@@ -1,17 +1,21 @@
 {
   "expo": {
-    "name": "masjid",
-    "slug": "masjid",
+    "name": "Nurul Ufuk",
+    "slug": "app-masjid",
     "version": "1.0.0",
+    "scheme": "nurulufuk",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "backgroundColor": "#F4EEE2",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "id.pintuweb.demo.nurulufuk"
     },
     "android": {
+      "package": "id.pintuweb.demo.nurulufuk",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#141C33",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -19,7 +23,33 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "output": "static",
+      "favicon": "./assets/favicon.png",
+      "name": "Nurul Ufuk — Aplikasi Jemaah Masjid",
+      "shortName": "Nurul Ufuk",
+      "lang": "id",
+      "themeColor": "#141C33",
+      "backgroundColor": "#F4EEE2"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": "https://app-masjid.pintuweb.id"
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/ElMessiri-SemiBold.ttf",
+            "./assets/fonts/ElMessiri-Bold.ttf",
+            "./assets/fonts/ReadexPro-Regular.ttf",
+            "./assets/fonts/ReadexPro-Medium.ttf",
+            "./assets/fonts/ReadexPro-SemiBold.ttf"
+          ]
+        }
+      ]
+    ]
   }
 }
