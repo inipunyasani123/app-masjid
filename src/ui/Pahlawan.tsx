@@ -19,6 +19,10 @@ export function Pahlawan({ koreksi }: { koreksi: number }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [k]);
   const b = now && hari ? salatBerikutnya(now, hari) : null;
+  // Hari Jumat: Zuhur diganti salat Jumat (azan pada waktu Zuhur).
+  const jumat = !!(b && hari && b.kunci === 'zuhur' && !b.besok && hariDalamPekan(hari) === 5);
+  const namaB = b ? (jumat ? 'salat Jumat' : NAMA_WAKTU[b.kunci].label) : '';
+  const arabB = b ? (jumat ? 'الجمعة' : NAMA_WAKTU[b.kunci].arab) : '';
   const fase = faseDari(now, data?.ini ?? null);
   const L = LANGIT[fase];
   const h = hari ? hijriah(hari, koreksi) : null;
@@ -26,7 +30,7 @@ export function Pahlawan({ koreksi }: { koreksi: number }) {
   const hBesok = hari && setelahMagrib ? hijriah(tambahHari(hari, 1), koreksi) : null;
   const menit = now ? Math.floor(now.getTime() / 60000) : 0;
   const ringkasan = useMemo(
-    () => (b ? `Salat berikutnya ${NAMA_WAKTU[b.kunci].label}${b.besok ? ' besok' : ''} pukul ${jam(b.waktu)} WIB, ${durasiKata(b.waktu.getTime() - (now?.getTime() ?? 0))} lagi.` : 'Menghitung jadwal salat hari ini.'),
+    () => (b ? `Berikutnya ${namaB}${b.besok ? ' besok' : ''} pukul ${jam(b.waktu)} WIB, ${durasiKata(b.waktu.getTime() - (now?.getTime() ?? 0))} lagi.` : 'Menghitung jadwal salat hari ini.'),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [b?.kunci, menit],
   );
@@ -36,11 +40,11 @@ export function Pahlawan({ koreksi }: { koreksi: number }) {
       <View style={g.atas} role="group" aria-label={ringkasan}>
         <View style={g.barisLabel}>
           <Text style={g.label} aria-hidden>
-            {b ? `Menuju ${NAMA_WAKTU[b.kunci].label}${b.besok ? ' · besok' : ''}` : 'Salat berikutnya'}
+            {b ? `Menuju ${namaB}${b.besok ? ' · besok' : ''}` : 'Salat berikutnya'}
           </Text>
           {b && (
             <Arab style={g.arab} aria-hidden>
-              {NAMA_WAKTU[b.kunci].arab}
+              {arabB}
             </Arab>
           )}
         </View>
@@ -48,7 +52,7 @@ export function Pahlawan({ koreksi }: { koreksi: number }) {
           {b ? mundur(b.waktu.getTime() - (now?.getTime() ?? 0)) : '--:--:--'}
         </Text>
         <Text style={g.pukul} aria-hidden>
-          {b ? `${NAMA_WAKTU[b.kunci].label} pukul ${jam(b.waktu)} WIB · ${LOKASI.nama}` : `Jadwal salat ${LOKASI.nama} · WIB`}
+          {b ? `${jumat ? 'Azan Jumat' : NAMA_WAKTU[b.kunci].label} pukul ${jam(b.waktu)} WIB · ${LOKASI.nama}` : `Jadwal salat ${LOKASI.nama} · WIB`}
         </Text>
       </View>
       <View style={g.busur}>

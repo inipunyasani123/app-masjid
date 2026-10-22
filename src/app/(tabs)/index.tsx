@@ -7,7 +7,7 @@ import { meta } from '@/lib/meta';
 import { ARAH_KIBLAT, jadwalHari, NAMA_WAKTU, salatBerikutnya, URUTAN_SALAT } from '@/lib/salat';
 import { useHariIni } from '@/lib/sekarang';
 import { useSimpan } from '@/lib/simpan';
-import { jam, kunciTgl, relatifHari, rupiah, rupiahRingkas, samaTgl, selisihHari, tanggalPendek, tambahHari } from '@/lib/waktu';
+import { hariDalamPekan, jam, kunciTgl, relatifHari, rupiah, rupiahRingkas, samaTgl, selisihHari, tanggalPendek, tambahHari } from '@/lib/waktu';
 
 const kapital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 import { FotoLengkung } from '@/ui/Foto';
@@ -79,7 +79,7 @@ export default function Beranda() {
           const aktif = hitung?.berikut.kunci === s && !hitung?.berikut.besok;
           return (
             <View key={s} role="listitem" style={[g.waktu, aktif && g.waktuAktif]}>
-              <Text style={[g.waktuNama, aktif && { color: W.emas }]}>{NAMA_WAKTU[s].label}</Text>
+              <Text style={[g.waktuNama, aktif && { color: W.emas }]}>{s === 'zuhur' && hari && hariDalamPekan(hari) === 5 ? 'Jumat' : NAMA_WAKTU[s].label}</Text>
               <Text style={[g.waktuJam, aktif && { color: W.krem }]}>{hitung ? jam(hitung.jadwal[s]) : '--.--'}</Text>
             </View>
           );
