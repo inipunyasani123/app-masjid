@@ -63,7 +63,7 @@ export default function DetailProgram() {
       }
     >
       <View style={{ marginBottom: 14 }}>
-        <VisualProgram p={p} tegak={false} latar={W.kertas} />
+        <VisualProgram p={p} tegak={false} latar={W.kertas} prioritas />
       </View>
 
       <Kartu nada="malam" style={{ gap: 8 }}>
@@ -85,7 +85,7 @@ export default function DetailProgram() {
             <Text style={g.besar}>
               {p.id === 'santunan'
                 ? data?.santunanBerikut
-                  ? tanggalPendek(data.santunanBerikut.tgl)
+                  ? `${tanggalPendek(data.santunanBerikut.tgl)} ${data.santunanBerikut.tgl.y}`
                   : '—'
                 : data
                   ? rupiah(data.rutin.reduce((a, k) => a + k.jumlah, 0))

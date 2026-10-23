@@ -210,7 +210,7 @@ export default function Beranda() {
           </Tautan>
           <Tautan href={hitung?.agenda ? `/agenda/${hitung.agenda.agenda.id}` : '/kegiatan?tab=agenda'} style={[g.sel, g.selAgenda]}>
             <View style={{ marginHorizontal: -12, marginTop: -12, marginBottom: 8 }}>
-              <FotoLengkung nama="kurma" latar={W.kartu2} hias={false} />
+              <FotoLengkung nama="kurma" latar={W.kartu2} hias={false} ukuran="(min-width: 768px) 180px, 50vw" />
             </View>
             <Label style={{ color: W.terakota }}>{hitung?.agenda?.h ? `${hitung.agenda.h.y} H` : 'Agenda'}</Label>
             <Text style={g.selJudul}>{hitung?.agenda ? hitung.agenda.agenda.pendek : 'Ramadan'}</Text>

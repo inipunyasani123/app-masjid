@@ -40,7 +40,7 @@ export default function DetailAgenda() {
     <Layar kembali label={a.perkiraan ? 'Agenda · tanggal perkiraan' : 'Agenda masjid'} judul={a.judul}>
       {a.foto && (
         <View style={{ marginBottom: 14 }}>
-          <FotoLengkung nama={a.foto} latar={W.kertas} />
+          <FotoLengkung nama={a.foto} latar={W.kertas} prioritas />
         </View>
       )}
       <Kartu nada="malam" style={{ gap: 6 }}>

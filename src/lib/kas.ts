@@ -101,8 +101,11 @@ export function entriBulan(y: number, m: number, sampai?: Batas, kampanye?: { y:
     tambah(18, `Material renovasi: ${TAHAP_RENOVASI[ke].toLowerCase()}`, 'Renovasi', antara(r, 3_600_000, 6_900_000), false, J(11));
   }
   if (m % 3 === 1) {
-    tambah(Math.min(8, n), 'Penyaluran santunan yatim dan duafa', 'Santunan', 2_600_000, false, J(16, 30));
-    tambah(3, 'Infak program santunan', 'Infak transfer', antara(r, 1_800_000, 2_900_000), true, J(20));
+    // Santunan triwulan (Jan, Apr, Jul, Okt) pada Ahad pertama, bakda Asar.
+    let ahad = 1;
+    while (hariDalamPekan({ y, m, d: ahad }) !== 0) ahad++;
+    tambah(ahad, 'Infak program santunan (rekap)', 'Infak transfer', antara(r, 1_800_000, 2_900_000), true, J(9));
+    tambah(ahad, 'Penyaluran santunan yatim dan duafa', 'Santunan', 2_600_000, false, J(16, 30));
   }
   if (m % 6 === 4) tambah(20, 'Servis pengeras suara dan kipas angin', 'Perawatan', antara(r, 1_900_000, 3_400_000), false, J(10));
 

@@ -34,7 +34,7 @@ function IlustrasiSantunan({ tegak, latar }: { tegak: boolean; latar: string }) 
   );
 }
 
-export function VisualProgram({ p, tegak = true, latar = W.kartu, hias = true }: { p: ProgramInfak; tegak?: boolean; latar?: string; hias?: boolean }) {
+export function VisualProgram({ p, tegak = true, latar = W.kartu, hias = true, prioritas }: { p: ProgramInfak; tegak?: boolean; latar?: string; hias?: boolean; prioritas?: boolean }) {
   if (p.visual === 'santunan') {
     return (
       <View style={[g.wadah, { aspectRatio: tegak ? 3 / 4 : 4 / 3 }]} role="img" aria-label={p.keterangan}>
@@ -42,7 +42,7 @@ export function VisualProgram({ p, tegak = true, latar = W.kartu, hias = true }:
       </View>
     );
   }
-  return <FotoLengkung nama={p.visual} tegak={tegak} latar={latar} hias={hias} />;
+  return <FotoLengkung nama={p.visual} tegak={tegak} latar={latar} hias={hias} prioritas={prioritas} />;
 }
 
 const g = StyleSheet.create({ wadah: { width: '100%', overflow: 'hidden' } });

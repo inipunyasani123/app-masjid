@@ -78,9 +78,11 @@ export function tanggalAgenda(a: Agenda, hari: Tgl, koreksi = 0): JadwalAgenda |
     return { agenda: a, tgl, sisa: s };
   }
   if (a.jenis === 'ahadPertama') {
-    for (let i = 0; i < 2; i++) {
+    // Ahad pertama pada bulan triwulan (Januari, April, Juli, Oktober), sama dengan laporan kas.
+    for (let i = 0; i < 5; i++) {
       const y = hari.y + Math.floor((hari.m - 1 + i) / 12);
       const m = ((hari.m - 1 + i) % 12) + 1;
+      if (m % 3 !== 1) continue;
       const awal = { y, m, d: 1 };
       const tgl = tambahHari(awal, (7 - hariDalamPekan(awal)) % 7);
       const s = selisihHari(hari, tgl);
