@@ -1,9 +1,9 @@
 import { Link, useRouter, type Href } from 'expo-router';
-import type { ReactNode } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import type { ComponentRef, ReactNode, Ref } from 'react';
+import { Platform, Pressable, ScrollView, type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ikon, type NamaIkon } from './Ikon';
-import { Judul, Label, Redup } from './Teks';
+import { Judul, Label, Redup, Text } from './Teks';
 import { F, W } from './tema';
 
 const web = Platform.OS === 'web';
@@ -15,6 +15,8 @@ export function Layar({
   sub,
   kembali,
   kanan,
+  bawah,
+  gulirRef,
 }: {
   children: ReactNode;
   judul?: string;
@@ -22,11 +24,15 @@ export function Layar({
   sub?: string;
   kembali?: boolean;
   kanan?: ReactNode;
+  /** Bilah aksi lengket di bawah layar (di atas menu tab). */
+  bawah?: ReactNode;
+  gulirRef?: Ref<ComponentRef<typeof ScrollView>>;
 }) {
   const ins = useSafeAreaInsets();
   return (
     <View role="main" style={g.layar}>
       <ScrollView
+        ref={gulirRef}
         contentContainerStyle={[g.isi, { paddingTop: (web ? 0 : ins.top) + 14 }]}
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="never"
@@ -46,7 +52,23 @@ export function Layar({
         )}
         {children}
       </ScrollView>
+      {bawah && <View style={g.bawah}>{bawah}</View>}
     </View>
+  );
+}
+
+/** Sakelar hidup/mati (role="switch"), target sentuh ≥ 44. */
+export function Saklar({ nilai, onUbah, label, keterangan, gelap }: { nilai: boolean; onUbah: (v: boolean) => void; label: string; keterangan?: string; gelap?: boolean }) {
+  return (
+    <Pressable role="switch" aria-checked={nilai} onPress={() => onUbah(!nilai)} style={g.saklar}>
+      <View style={{ flex: 1 }}>
+        <Text style={[g.saklarLabel, gelap && { color: W.krem }]}>{label}</Text>
+        {keterangan && <Text style={[g.saklarKet, gelap && { color: W.kremRedup }]}>{keterangan}</Text>}
+      </View>
+      <View style={[g.jalur, nilai && { backgroundColor: gelap ? W.emas : W.malam }]}>
+        <View style={[g.bulat, nilai && { transform: [{ translateX: 18 }] }]} />
+      </View>
+    </Pressable>
   );
 }
 
@@ -114,7 +136,7 @@ const VARIAN: Record<Varian, { box: ViewStyle; teks: string }> = {
 };
 
 /** Tautan berbentuk kartu/baris; di web menjadi <a href>. */
-export function Tautan({ href, children, style, label }: { href: Href; children: ReactNode; style?: ViewStyle | ViewStyle[]; label?: string }) {
+export function Tautan({ href, children, style, label }: { href: Href; children: ReactNode; style?: StyleProp<ViewStyle>; label?: string }) {
   return (
     <Link href={href} asChild>
       <Pressable aria-label={label} style={StyleSheet.flatten(style)}>
@@ -191,4 +213,10 @@ const g = StyleSheet.create({
   segmenItem: { flex: 1, minHeight: 40, borderRadius: 999, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8 },
   segmenAktif: { backgroundColor: W.malam },
   segmenTeks: { ...F.body(600), fontSize: 14, color: W.tinta },
+  bawah: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, backgroundColor: W.kertas, borderTopWidth: 1, borderTopColor: W.garis },
+  saklar: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 48, paddingVertical: 4 },
+  saklarLabel: { ...F.body(500), fontSize: 15, lineHeight: 21, color: W.tinta },
+  saklarKet: { ...F.body(400), fontSize: 13, lineHeight: 18, color: W.tinta2 },
+  jalur: { width: 44, height: 26, borderRadius: 13, backgroundColor: W.garisTua, padding: 3 },
+  bulat: { width: 20, height: 20, borderRadius: 10, backgroundColor: W.kartu },
 });

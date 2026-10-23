@@ -48,6 +48,8 @@ export type Kajian = {
   isi: string[];
   kuota?: number;
   terdaftar?: number;
+  /** Kemajuan materi: `bab` = bahasan pertemuan berikutnya, `lalu` = ringkasan pertemuan sebelumnya. */
+  materi?: { ke: number; dari: number; satuan: string; bab: string; lalu: string[] };
 };
 
 export const KAJIAN: Kajian[] = [
@@ -67,6 +69,17 @@ export const KAJIAN: Kajian[] = [
       'Pekan ini melanjutkan bab tata cara wudu dan hal-hal yang membatalkannya.',
       'Kitab boleh dibawa sendiri; takmir menyediakan salinan pinjaman di rak serambi.',
     ],
+    materi: {
+      ke: 14,
+      dari: 40,
+      satuan: 'pertemuan',
+      bab: 'Fasal hal-hal yang membatalkan wudu',
+      lalu: [
+        'Fardu wudu ada enam: niat, membasuh wajah, membasuh kedua tangan sampai siku, mengusap sebagian kepala, membasuh kedua kaki sampai mata kaki, dan tertib.',
+        'Niat wudu dilakukan bersamaan dengan basuhan pertama pada wajah.',
+        'Pertanyaan jemaah soal wudu bagi yang memakai perban dijawab saat masuk bab tayamum.',
+      ],
+    },
   },
   {
     id: 'kuliah-subuh',
@@ -82,6 +95,16 @@ export const KAJIAN: Kajian[] = [
       'Setiap pertemuan membahas satu surah pendek: arti per kata, makna umum, dan pelajaran untuk sehari-hari.',
       'Durasi dijaga 30 menit agar jemaah tetap bisa berangkat kerja dan sekolah tepat waktu.',
     ],
+    materi: {
+      ke: 30,
+      dari: 37,
+      satuan: 'surah',
+      bab: "Surah Al-Ma'un (QS 107)",
+      lalu: [
+        'Surah Quraisy (QS 106): nikmat rasa aman dan rezeki bagi kaum Quraisy, lalu ajakan menyembah Tuhan pemilik Kakbah.',
+        'Kaitannya dengan Surah Al-Fil sebelumnya: perlindungan Allah atas Kakbah.',
+      ],
+    },
   },
   {
     id: 'muslimah',
@@ -97,6 +120,13 @@ export const KAJIAN: Kajian[] = [
       'Kajian dibuka dengan tadarus bersama, lalu materi dan sesi tanya jawab.',
       'Tersedia sudut bermain anak yang dijaga relawan, jadi ibu bisa menyimak dengan tenang.',
     ],
+    materi: {
+      ke: 5,
+      dari: 12,
+      satuan: 'pertemuan',
+      bab: 'Musyawarah dalam keluarga',
+      lalu: ['Saling menghargai peran suami dan istri dalam mengurus rumah.', 'Berbagi tugas mendampingi anak belajar mengaji di rumah.'],
+    },
   },
   {
     id: 'yasinan',
@@ -130,6 +160,16 @@ export const KAJIAN: Kajian[] = [
     ],
     kuota: 24,
     terdaftar: 17,
+    materi: {
+      ke: 6,
+      dari: 24,
+      satuan: 'pertemuan',
+      bab: 'Hukum nun mati dan tanwin: izhar, idgam, iqlab, dan ikhfa',
+      lalu: [
+        'Makhraj huruf halqi, enam huruf yang keluar dari tenggorokan: hamzah, ha (ه), ain, ha (ح), gain, dan kha.',
+        'Latihan membedakan bunyi ha (ه) dan ha (ح) pada surah-surah pendek.',
+      ],
+    },
   },
   {
     id: 'riyadhus',
@@ -146,6 +186,16 @@ export const KAJIAN: Kajian[] = [
       'Kajian pekanan yang paling ramai: kitab dibaca, lalu diberi penjelasan dan contoh dalam kehidupan bertetangga.',
       'Sarapan sederhana tersedia dari kas konsumsi kajian; jemaah boleh ikut menyumbang lewat kotak di serambi.',
     ],
+    materi: {
+      ke: 9,
+      dari: 30,
+      satuan: 'pertemuan tahun ini',
+      bab: 'Bab berbakti kepada orang tua dan menyambung silaturahmi',
+      lalu: [
+        'Bab hak tetangga: tetangga berhak dihormati dan dibantu, termasuk lewat hal kecil seperti berbagi makanan.',
+        'Diskusi jemaah: menjaga hubungan baik dengan tetangga saat berbeda pendapat soal urusan kampung.',
+      ],
+    },
   },
   {
     id: 'tpq',
@@ -328,13 +378,66 @@ export const PENGUMUMAN: Pengumuman[] = [
   },
 ];
 
-export type ProgramInfak = { id: string; judul: string; ringkas: string; target?: number; dasar?: number; foto?: 'wudu' | 'kurma' | 'bedug' | 'kambing' };
+export type ProgramInfak = {
+  id: string;
+  judul: string;
+  ringkas: string;
+  target?: number;
+  dasar?: number;
+  visual: 'wudu' | 'kurma' | 'bedug' | 'kambing' | 'santunan';
+  keterangan: string;
+  isi: string[];
+};
 
 export const PROGRAM_INFAK: ProgramInfak[] = [
-  { id: 'wudu', judul: 'Renovasi tempat wudu putri', ringkas: 'Keramik antiselip, 12 kran baru, dan saluran air yang tidak lagi meluap saat hujan.', target: 85_000_000, dasar: 21_500_000, foto: 'wudu' },
-  { id: 'operasional', judul: 'Operasional masjid', ringkas: 'Listrik, air, kebersihan, dan honor marbot agar masjid tetap nyaman setiap hari.' },
-  { id: 'santunan', judul: 'Santunan yatim dan duafa', ringkas: 'Disalurkan tiap triwulan untuk anak yatim dan keluarga duafa di sekitar masjid.' },
-  { id: 'takjil', judul: 'Takjil Ramadan', ringkas: 'Menu berbuka gratis bakda Asar selama Ramadan untuk jemaah dan musafir.', target: 18_000_000, dasar: 2_350_000, foto: 'kurma' },
+  {
+    id: 'wudu',
+    judul: 'Renovasi tempat wudu putri',
+    ringkas: 'Keramik antiselip, 12 kran baru, dan saluran air yang tidak lagi meluap saat hujan.',
+    target: 85_000_000,
+    dasar: 21_500_000,
+    visual: 'wudu',
+    keterangan: 'Deretan kran di tempat wudu',
+    isi: [
+      'Tempat wudu putri dibangun lebih dari 20 tahun lalu: lantainya licin, beberapa kran bocor, dan salurannya meluap saat hujan deras.',
+      'Pekerjaan dibagi empat tahap mengikuti dana yang masuk. Setiap pembelian material dicatat di laporan kas kategori Renovasi.',
+    ],
+  },
+  {
+    id: 'operasional',
+    judul: 'Operasional masjid',
+    ringkas: 'Listrik, air, kebersihan, dan honor marbot agar masjid tetap nyaman setiap hari.',
+    visual: 'bedug',
+    keterangan: 'Bedug dan kentongan di serambi masjid',
+    isi: [
+      'Biaya rutin bulanan: listrik dan air, alat kebersihan, konsumsi kajian, serta honor marbot, pengajar TPQ, imam rawatib, dan muazin.',
+      'Infak operasional menutup kebutuhan ini lebih dulu; kelebihannya disimpan sebagai saldo kas.',
+    ],
+  },
+  {
+    id: 'santunan',
+    judul: 'Santunan yatim dan duafa',
+    ringkas: 'Disalurkan tiap triwulan untuk anak yatim dan keluarga duafa di sekitar masjid.',
+    visual: 'santunan',
+    keterangan: 'Ilustrasi amplop santunan dan beras',
+    isi: [
+      'Penerima didata bersama ketua RT: 32 anak yatim dan 18 keluarga duafa di sekitar masjid.',
+      'Santunan berupa uang dan paket beras, diserahkan bakda Asar di serambi selatan pada Ahad pertama bulan penyaluran.',
+    ],
+  },
+  {
+    id: 'takjil',
+    judul: 'Takjil Ramadan',
+    ringkas: 'Menu berbuka gratis bakda Asar selama Ramadan untuk jemaah dan musafir.',
+    target: 18_000_000,
+    dasar: 2_350_000,
+    visual: 'kurma',
+    keterangan: 'Tandan kurma di pohonnya',
+    isi: [
+      'Rencana: 30 hari × 120 porsi × Rp5.000 = Rp18.000.000. Menu bergantian: kurma, air putih, dan kudapan seperti kolak atau gorengan.',
+      'Takjil dibagikan bakda Asar di serambi oleh relawan; kelebihan dana dialihkan ke santunan.',
+    ],
+  },
 ];
 
 export const NOMINAL = [10_000, 20_000, 50_000, 100_000, 250_000];

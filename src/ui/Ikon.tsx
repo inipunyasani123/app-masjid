@@ -3,7 +3,8 @@ import { W } from './tema';
 
 export type NamaIkon =
   | 'kubah' | 'jam' | 'lentera' | 'buku' | 'tangan' | 'kompas' | 'kembali' | 'kanan' | 'centang'
-  | 'info' | 'orang' | 'megafon' | 'lokasi' | 'kalender' | 'silang' | 'atas' | 'bawah' | 'tambah';
+  | 'info' | 'orang' | 'megafon' | 'lokasi' | 'kalender' | 'silang' | 'atas' | 'bawah' | 'tambah'
+  | 'lonceng' | 'bagikan' | 'unduh' | 'salin' | 'kurang';
 
 const PATH: Record<NamaIkon, string> = {
   kubah: 'M12 2.5v2.2M12 4.7c-3.9 0-6.4 3.4-6.4 8.3h12.8c0-4.9-2.5-8.3-6.4-8.3ZM4.5 13h15M5.5 13v7.5M18.5 13v7.5M3 20.5h18M10 20.5v-3.2a2 2 0 0 1 4 0v3.2',
@@ -24,12 +25,17 @@ const PATH: Record<NamaIkon, string> = {
   atas: 'M6 15l6-6 6 6',
   bawah: 'M6 9l6 6 6-6',
   tambah: 'M12 5v14M5 12h14',
+  kurang: 'M5 12h14',
+  lonceng: 'M6 16.5V11a6 6 0 1 1 12 0v5.5l1.6 2.2H4.4L6 16.5ZM9.8 20.6a2.3 2.3 0 0 0 4.4 0',
+  bagikan: 'M12 3.5v11.5M7.8 7.7 12 3.5l4.2 4.2M5 12.5v7.5h14v-7.5',
+  unduh: 'M12 3.5v12M7.8 11.3 12 15.5l4.2-4.2M5 20h14',
+  salin: 'M8.5 8.5h11v11h-11zM5 15.5v-11h11',
 };
 
-export function Ikon({ nama, ukuran = 22, warna = W.tinta, tebal = 1.8 }: { nama: NamaIkon; ukuran?: number; warna?: string; tebal?: number }) {
+export function Ikon({ nama, ukuran = 22, warna = W.tinta, tebal = 1.8, isi }: { nama: NamaIkon; ukuran?: number; warna?: string; tebal?: number; isi?: string }) {
   return (
     <Svg width={ukuran} height={ukuran} viewBox="0 0 24 24" fill="none" aria-hidden>
-      <Path d={PATH[nama]} stroke={warna} strokeWidth={tebal} strokeLinecap="round" strokeLinejoin="round" />
+      <Path d={PATH[nama]} stroke={warna} strokeWidth={tebal} strokeLinecap="round" strokeLinejoin="round" fill={isi ?? 'none'} />
     </Svg>
   );
 }

@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { MASJID } from '@/lib/data';
-import { laporanKas, type LaporanBulan } from '@/lib/kas';
+import { laporanKas, menungguRekapJumat, type LaporanBulan } from '@/lib/kas';
 import { meta } from '@/lib/meta';
 import { useHariIni } from '@/lib/sekarang';
-import { BULAN, BULAN_PENDEK, kunciTgl, rupiah, rupiahRingkas, tanggalPendek } from '@/lib/waktu';
+import { BULAN, BULAN_PENDEK, jumlahHari, kunciTgl, rupiah, rupiahRingkas, tanggalPendek } from '@/lib/waktu';
 import { Bagian, Kartu, Layar } from '@/ui/Komponen';
-import { Label, Redup, Teks } from '@/ui/Teks';
+import { Label, Redup, Teks, Text } from '@/ui/Teks';
 import { F, W } from '@/ui/tema';
 
 export function generateMetadata() {
@@ -22,8 +22,10 @@ const BIRU = '#2D4F9E';
 const JINGGA = '#C26A1E';
 
 export default function Kas() {
-  const { hari } = useHariIni();
-  const lap = useMemo(() => (hari ? laporanKas(hari, 6) : null), [hari ? kunciTgl(hari) : '']); // eslint-disable-line react-hooks/exhaustive-deps
+  const { now, hari } = useHariIni();
+  const ketuk = now ? Math.floor(now.getTime() / 300000) : 0; // segarkan tiap 5 menit agar entri hari ini muncul tepat waktu
+  const lap = useMemo(() => (now ? laporanKas(now, 6) : null), [hari ? kunciTgl(hari) : '', ketuk]); // eslint-disable-line react-hooks/exhaustive-deps
+  const menunggu = now ? menungguRekapJumat(now) : false;
   const [pilih, setPilih] = useState<number | null>(null);
   const idx = lap ? (pilih ?? lap.length - 1) : 0;
   const b = lap?.[idx];
@@ -33,8 +35,8 @@ export default function Kas() {
     <Layar label="Terbuka untuk semua jemaah" judul="Laporan kas" sub={`${MASJID.bendahara}. Diperiksa dua perwakilan jemaah setiap akhir bulan.`}>
       <Kartu nada="malam" style={g.ringkas}>
         <Label style={{ color: W.emas }}>{b ? (b.berjalan ? `Saldo per ${tanggalPendek(hari!)} ${hari!.y}` : `Saldo akhir ${BULAN[b.m - 1]} ${b.y}`) : 'Saldo kas'}</Label>
-        <Text style={g.saldo} numberOfLines={1} adjustsFontSizeToFit>
-          {b ? rupiah(b.saldoAkhir) : 'Rp…'}
+        <Text style={g.saldo} maksSkala={1.1}>
+          {b ? rupiah(b.saldoAkhir) : 'Rp—'}
         </Text>
         <View style={g.tigaKolom}>
           <Angka label="Saldo awal" nilai={b ? rupiahRingkas(b.saldoAwal) : '…'} />
@@ -64,6 +66,11 @@ export default function Kas() {
       {b && (
         <>
           <Bagian judul={`Rincian ${BULAN[b.m - 1]}${b.berjalan ? ' (berjalan)' : ''}`}>
+            <Redup style={{ marginTop: -4 }}>
+              {b.berjalan
+                ? 'Bulan berjalan: diperiksa perwakilan jemaah di akhir bulan.'
+                : `Diperiksa ${jumlahHari(b.y, b.m)} ${BULAN[b.m - 1]} ${b.y} oleh bendahara dan 2 perwakilan jemaah.`}
+            </Redup>
             <Kartu style={{ gap: 10 }}>
               {b.kategori.map((k) => {
                 const total = k.masuk ? b.masuk : b.keluar;
@@ -91,6 +98,19 @@ export default function Kas() {
 
           <Bagian judul="Transaksi">
             <View role="list" style={g.daftar}>
+              {b.berjalan && menunggu && (
+                <View role="listitem" style={[g.entri, { backgroundColor: '#FBF3DF' }]}>
+                  <View style={g.entriTgl}>
+                    <Text style={g.entriD}>{hari!.d}</Text>
+                    <Text style={g.entriM}>{BULAN_PENDEK[hari!.m - 1]}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Teks style={{ fontSize: 14, lineHeight: 20 }}>Kotak amal Jumat hari ini</Teks>
+                    <Redup style={{ fontSize: 12 }}>Menunggu rekap bakda Jumat (±13.00 WIB)</Redup>
+                  </View>
+                  <Text style={[g.entriAngka, { color: W.tinta2 }]}>Rp—</Text>
+                </View>
+              )}
               {(semua ? b.entri : b.entri.slice(-10)).slice().reverse().map((e, i) => (
                 <View key={i} role="listitem" style={g.entri}>
                   <View style={g.entriTgl}>
@@ -193,7 +213,7 @@ const g = StyleSheet.create({
   entri: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: '#EFE7D8' },
   entriTgl: { width: 34, alignItems: 'center' },
   entriD: { ...F.display(700), fontSize: 18, lineHeight: 22, color: W.tinta },
-  entriM: { ...F.body(500), fontSize: 11, color: W.tinta2 },
+  entriM: { ...F.body(500), fontSize: 12, color: W.tinta2 },
   entriAngka: { ...F.body(600), fontSize: 14, color: W.tinta, fontVariant: ['tabular-nums'] },
   titik: { width: 8, height: 8, borderRadius: 4 },
   lagi: { minHeight: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 999, borderWidth: 1.5, borderColor: W.tinta, marginTop: 4 },

@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { Tautan } from './Komponen';
-import { Redup } from './Teks';
+import { Redup, Text } from './Teks';
 import { F, W } from './tema';
 
 /** Halaman 404 bergaya: busur ufuk kosong, bulan sabit tersesat di bawah cakrawala. */

@@ -1,6 +1,7 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { tautanWa } from '@/lib/bagikan';
 import { AGENDA } from '@/lib/data';
 import { teksHijriah } from '@/lib/hijriah';
 import { tanggalAgenda } from '@/lib/kegiatan';
@@ -10,7 +11,9 @@ import { useSimpan } from '@/lib/simpan';
 import { kunciTgl, tanggalPanjang } from '@/lib/waktu';
 import { FotoLengkung } from '@/ui/Foto';
 import { Bagian, Kartu, Layar, Tombol } from '@/ui/Komponen';
-import { Label, Redup, Teks } from '@/ui/Teks';
+import { Ikon } from '@/ui/Ikon';
+import { PratinjauRamadan } from '@/ui/PratinjauRamadan';
+import { Label, Redup, Teks, Text } from '@/ui/Teks';
 import { TidakDitemukan } from '@/ui/TidakDitemukan';
 import { F, W } from '@/ui/tema';
 
@@ -28,7 +31,7 @@ export default function DetailAgenda() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const a = AGENDA.find((x) => x.id === id);
-  const { hari } = useHariIni();
+  const { now, hari } = useHariIni();
   const [koreksi] = useSimpan<number>('koreksi', 0);
   const jadwal = useMemo(() => (a && hari ? tanggalAgenda(a, hari, koreksi) : null), [a?.id, hari ? kunciTgl(hari) : '', koreksi]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -63,6 +66,20 @@ export default function DetailAgenda() {
         </View>
       </Bagian>
 
+      {a.id === 'ramadan' && jadwal && now && hari && <PratinjauRamadan awal={jadwal.tgl} hari={hari} now={now} koreksi={koreksi} />}
+
+      <Link
+        href={tautanWa(`Assalamualaikum, ada ${a.judul.toLowerCase()} di Masjid Nurul Ufuk${jadwal ? `, ${tanggalPanjang(jadwal.tgl)}${a.perkiraan ? ' (perkiraan)' : ''}` : ''} · ${a.jam}, ${a.tempat}. (Demo aplikasi: https://app-masjid.pintuweb.id/agenda/${a.id})`) as never}
+        target="_blank"
+        rel="noopener"
+        asChild
+      >
+        <Pressable style={g.ajak}>
+          <Ikon nama="bagikan" ukuran={18} warna={W.tinta} />
+          <Text style={g.ajakTeks}>Ajak lewat WhatsApp</Text>
+        </Pressable>
+      </Link>
+
       {a.relawan && (
         <Kartu nada="krem" style={{ marginTop: 22, gap: 10 }}>
           <Teks style={{ ...F.body(600) }}>Relawan yang dibutuhkan</Teks>
@@ -89,4 +106,6 @@ const g = StyleSheet.create({
   peran: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   peranItem: { borderRadius: 8, borderWidth: 1, borderColor: W.garisTua, paddingHorizontal: 10, paddingVertical: 6 },
   peranTeks: { ...F.body(500), fontSize: 13, color: W.tinta },
+  ajak: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 50, borderRadius: 999, borderWidth: 1.5, borderColor: W.tinta, marginTop: 22 },
+  ajakTeks: { ...F.body(600), fontSize: 15, color: W.tinta },
 });

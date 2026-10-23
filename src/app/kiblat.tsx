@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { bayanganKiblat } from '@/lib/matahari';
 import { meta } from '@/lib/meta';
 import { ARAH_KIBLAT, JARAK_KAABAH_KM, LOKASI } from '@/lib/salat';
@@ -7,7 +7,7 @@ import { useHariIni } from '@/lib/sekarang';
 import { HARI, hariDalamPekan, jam, kunciTgl, tambahHari, tanggalPendek, type Tgl } from '@/lib/waktu';
 import { Bagian, Kartu, Layar, Tombol } from '@/ui/Komponen';
 import { Kompas } from '@/ui/Kompas';
-import { Label, Redup, Teks } from '@/ui/Teks';
+import { Label, Redup, Teks, Text } from '@/ui/Teks';
 import { F, W } from '@/ui/tema';
 
 export function generateMetadata() {
@@ -106,6 +106,11 @@ export default function Kiblat() {
           <Tombol varian="garis" onPress={nyalakan} nonaktif={arah.status === 'tunggu'}>
             {arah.status === 'tunggu' ? 'Membaca sensor…' : 'Pakai kompas HP'}
           </Tombol>
+        )}
+        {arah.status !== 'mati' && (
+          <Redup style={{ textAlign: 'center' }}>
+            Agar akurat: gerakkan HP membentuk angka 8 beberapa kali untuk kalibrasi, dan jauhkan dari benda logam atau magnet seperti pengeras suara dan motor.
+          </Redup>
         )}
       </Kartu>
 

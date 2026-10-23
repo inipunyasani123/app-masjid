@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { BULAN_HIJRIAH, hijriah, teksHijriah } from '@/lib/hijriah';
-import { jadwalHari, NAMA_WAKTU, salatBerikutnya, LOKASI } from '@/lib/salat';
+import { jadwalHari, NAMA_WAKTU, salatBerikutnya, LOKASI, waktuSekarang } from '@/lib/salat';
 import { useSekarang } from '@/lib/sekarang';
 import { durasiKata, HARI, hariDalamPekan, jam, kunciTgl, mundur, tambahHari, tanggalPendek, tglWib } from '@/lib/waktu';
-import { Arab } from './Teks';
+import { Bintang8 } from './Ikon';
+import { Arab, Text } from './Teks';
 import { F, W } from './tema';
 import { faseDari, LANGIT, Ufuk } from './Ufuk';
 
@@ -23,6 +24,7 @@ export function Pahlawan({ koreksi }: { koreksi: number }) {
   const jumat = !!(b && hari && b.kunci === 'zuhur' && !b.besok && hariDalamPekan(hari) === 5);
   const namaB = b ? (jumat ? 'salat Jumat' : NAMA_WAKTU[b.kunci].label) : '';
   const arabB = b ? (jumat ? 'الجمعة' : NAMA_WAKTU[b.kunci].arab) : '';
+  const kini = now && hari ? waktuSekarang(now, hari, hariDalamPekan(hari) === 5) : null;
   const fase = faseDari(now, data?.ini ?? null);
   const L = LANGIT[fase];
   const h = hari ? hijriah(hari, koreksi) : null;
@@ -34,10 +36,11 @@ export function Pahlawan({ koreksi }: { koreksi: number }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [b?.kunci, menit],
   );
+  const labelGrup = kini ? `${kini.teks.replace(' · ', ', ')}. ${ringkasan}` : ringkasan;
 
   return (
     <View style={[g.kartu, { backgroundColor: L.atas }]}>
-      <View style={g.atas} role="group" aria-label={ringkasan}>
+      <View style={g.atas} role="group" aria-label={labelGrup}>
         <View style={g.barisLabel}>
           <Text style={g.label} aria-hidden>
             {b ? `Menuju ${namaB}${b.besok ? ' · besok' : ''}` : 'Salat berikutnya'}
@@ -48,12 +51,16 @@ export function Pahlawan({ koreksi }: { koreksi: number }) {
             </Arab>
           )}
         </View>
-        <Text style={g.hitung} aria-hidden>
+        <Text style={g.hitung} aria-hidden maksSkala={1.1}>
           {b ? mundur(b.waktu.getTime() - (now?.getTime() ?? 0)) : '--:--:--'}
         </Text>
         <Text style={g.pukul} aria-hidden>
           {b ? `${jumat ? 'Azan Jumat' : NAMA_WAKTU[b.kunci].label} pukul ${jam(b.waktu)} WIB · ${LOKASI.nama}` : `Jadwal salat ${LOKASI.nama} · WIB`}
         </Text>
+        <View style={g.kini} aria-hidden>
+          <Bintang8 ukuran={11} warna={W.emas} isi />
+          <Text style={g.kiniTeks}>{kini ? kini.teks : 'Sekarang: menghitung waktu…'}</Text>
+        </View>
       </View>
       <View style={g.busur}>
         <Ufuk now={now} kemarin={data?.kemarin ?? null} hariIni={data?.ini ?? null} besok={data?.besok ?? null} berikut={b?.kunci ?? null} fase={fase} />
@@ -85,5 +92,6 @@ const g = StyleSheet.create({
   tglH: { ...F.display(600), fontSize: 18, lineHeight: 24, color: W.krem },
   tglM: { ...F.body(500), fontSize: 14, lineHeight: 24, color: W.krem },
   tglKecil: { ...F.body(400), fontSize: 12, lineHeight: 17, color: W.kremRedup },
-  pukulBaris: { height: 20 },
+  kini: { flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'flex-start', marginTop: 10, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999, backgroundColor: 'rgba(245,234,210,0.1)', borderWidth: 1, borderColor: 'rgba(245,234,210,0.18)', maxWidth: '100%' },
+  kiniTeks: { ...F.body(500), fontSize: 13, lineHeight: 18, color: W.krem, flexShrink: 1 },
 });

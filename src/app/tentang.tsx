@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import type { Href } from 'expo-router';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { MASJID, SITUS } from '@/lib/data';
 import { hijriah, teksHijriah } from '@/lib/hijriah';
 import { meta } from '@/lib/meta';
 import { LOKASI, METODE } from '@/lib/salat';
 import { useHariIni } from '@/lib/sekarang';
 import { hapusSemua, useSimpan } from '@/lib/simpan';
+import { bukaLembar, SKALA_PILIHAN, skalaHuruf, useSkala } from '@/lib/tampilan';
 import { Ikon } from '@/ui/Ikon';
 import { Bagian, Kartu, Layar, Pilihan, Tautan, Tombol } from '@/ui/Komponen';
-import { Arab, Label, Redup, Teks } from '@/ui/Teks';
+import { Arab, Label, Redup, Teks, Text } from '@/ui/Teks';
 import { F, W } from '@/ui/tema';
 
 export function generateMetadata() {
@@ -31,6 +32,8 @@ export default function Tentang() {
   const [koreksi, setKoreksi] = useSimpan<number>('koreksi', 0);
   const { hari } = useHariIni();
   const [direset, setDireset] = useState(false);
+  const skala = useSkala();
+  const [, setHuruf] = useSimpan<number>('huruf', 1);
 
   return (
     <Layar kembali label="Tentang" judul="Tentang aplikasi">
@@ -42,6 +45,30 @@ export default function Tentang() {
           bayangan kiblat untuk {LOKASI.nama}.
         </Text>
       </Kartu>
+
+      <Bagian judul="Tampilan & pengingat">
+        <Kartu style={{ gap: 10 }}>
+          <Teks style={{ ...F.body(600) }}>Ukuran huruf</Teks>
+          <Pilihan<string>
+            label="Ukuran huruf"
+            nilai={String(SKALA_PILIHAN.find((x) => Math.abs(x.id - skala) < 0.01)?.id ?? 1)}
+            onPilih={(v) => {
+              skalaHuruf.atur(Number(v));
+              setHuruf(Number(v));
+            }}
+            pilihan={SKALA_PILIHAN.map((x) => ({ id: String(x.id), teks: x.teks }))}
+          />
+          <Redup>Huruf lebih besar membantu jemaah lansia membaca jadwal. Tersimpan di perangkat ini.</Redup>
+          <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+            <Tombol varian="garis" ikon="lonceng" onPress={() => bukaLembar('pengingat')} style={{ flexGrow: 1 }}>
+              Atur pengingat
+            </Tombol>
+            <Tombol varian="garis" onPress={() => bukaLembar('kenalan')} style={{ flexGrow: 1 }}>
+              Putar ulang pengenalan
+            </Tombol>
+          </View>
+        </Kartu>
+      </Bagian>
 
       <Bagian judul="Koreksi tanggal Hijriah">
         <Kartu style={{ gap: 10 }}>
@@ -86,12 +113,14 @@ export default function Tentang() {
       <Bagian judul="Data di perangkat">
         <Kartu style={{ gap: 10 }}>
           <Redup>
-            Pendaftaran relawan, riwayat infak simulasi, dan koreksi Hijriah hanya disimpan di perangkat ini. Tidak ada yang dikirim ke server.
+            Pendaftaran relawan, riwayat infak simulasi, pengingat, ukuran huruf, dan koreksi Hijriah hanya disimpan di perangkat ini. Tidak ada yang dikirim ke
+            server.
           </Redup>
           <Tombol
             varian="garis"
             onPress={async () => {
               await hapusSemua();
+              skalaHuruf.atur(1);
               setDireset(true);
             }}
           >

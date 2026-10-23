@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AGENDA, KAJIAN } from '@/lib/data';
 import { meta } from '@/lib/meta';
 import { kini } from '@/lib/sekarang';
@@ -8,7 +8,7 @@ import { type Pendaftaran, useSimpan } from '@/lib/simpan';
 import { jam, tanggalPendek, tglWib } from '@/lib/waktu';
 import { Ikon } from '@/ui/Ikon';
 import { Bagian, Kartu, Layar, Tombol } from '@/ui/Komponen';
-import { Label, Redup, Teks } from '@/ui/Teks';
+import { Label, Redup, Teks, Text } from '@/ui/Teks';
 import { F, W } from '@/ui/tema';
 
 export function generateMetadata() {

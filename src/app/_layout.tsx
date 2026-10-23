@@ -1,12 +1,63 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
+import { useSimpan } from '@/lib/simpan';
+import { bukaLembar, lembar, skalaHuruf, useLembar } from '@/lib/tampilan';
+import { LembarKenalan } from '@/ui/Kenalan';
+import { BannerPengingat, LembarPengingat } from '@/ui/Pengingat';
 import { W } from '@/ui/tema';
 
-export default function RootLayout() {
+/** Memuat ukuran huruf tersimpan dan membuka pengenalan sekali untuk pengunjung baru. */
+function Pemuat() {
+  const [huruf, , siapHuruf] = useSimpan<number>('huruf', 1);
+  const [kenalan, , siapKenalan] = useSimpan<boolean>('kenalan', false);
+  useEffect(() => {
+    if (siapHuruf) skalaHuruf.atur(huruf);
+  }, [huruf, siapHuruf]);
+  useEffect(() => {
+    // Web: Spasi menyalakan sakelar/radio/kotak centang seperti kontrol bawaan (Enter sudah ditangani react-native-web).
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const f = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if ((e.key === ' ' || e.key === 'Spacebar') && el && ['switch', 'radio', 'checkbox'].includes(el.getAttribute('role') ?? '')) {
+        e.preventDefault();
+        el.click();
+      }
+    };
+    document.addEventListener('keydown', f);
+    return () => document.removeEventListener('keydown', f);
+  }, []);
+  useEffect(() => {
+    if (!siapKenalan || kenalan) return;
+    const t = setTimeout(() => {
+      if (lembar.ambil() === null) bukaLembar('kenalan');
+    }, 900);
+    return () => clearTimeout(t);
+  }, [kenalan, siapKenalan]);
+  return null;
+}
+
+function Lapisan() {
+  const nama = useLembar();
   return (
     <>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: W.kertas }, animation: 'slide_from_right' }} />
+      <BannerPengingat />
+      {nama === 'pengingat' && <LembarPengingat />}
+      {nama === 'kenalan' && <LembarKenalan />}
     </>
   );
 }
+
+export default function RootLayout() {
+  return (
+    <View style={g.akar}>
+      <StatusBar style="dark" />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: W.kertas }, animation: 'slide_from_right' }} />
+      <Pemuat />
+      <Lapisan />
+    </View>
+  );
+}
+
+const g = StyleSheet.create({ akar: { flex: 1, backgroundColor: W.kertas } });

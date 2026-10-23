@@ -1,4 +1,5 @@
 import { CalculationParameters, Coordinates, Madhab, PrayerTimes, Qibla, Rounding } from 'adhan';
+import { posisiMatahari } from './matahari';
 import { tambahHari, type Tgl } from './waktu';
 
 /**
@@ -32,6 +33,7 @@ export const METODE = {
   ringkas: 'Kemenag RI · Subuh −20° · Isya −18°',
   rinci: [
     'Subuh: matahari 20° di bawah ufuk timur.',
+    'Duha: matahari 4,5° di atas ufuk timur.',
     'Isya: matahari 18° di bawah ufuk barat.',
     'Asar: panjang bayangan = tinggi benda + bayangan saat Zuhur (mazhab Syafi\'i).',
     'Ihtiyath (pengaman) 2 menit; Zuhur ditambah 1 menit agar piringan matahari lewat meridian.',
@@ -56,7 +58,18 @@ export const NAMA_WAKTU: Record<KunciWaktu, { label: string; arab: string }> = {
 export const URUTAN_WAKTU: KunciWaktu[] = ['imsak', 'subuh', 'terbit', 'zuhur', 'asar', 'magrib', 'isya'];
 export const URUTAN_SALAT: KunciSalat[] = ['subuh', 'zuhur', 'asar', 'magrib', 'isya'];
 
-export type Jadwal = Record<KunciWaktu, Date>;
+/** Jadwal satu hari. `duha` = matahari 4,5° di atas ufuk + ihtiyath 2 menit (kriteria jadwal Kemenag). */
+export type Jadwal = Record<KunciWaktu, Date> & { duha: Date };
+
+function hitungDuha(terbit: Date) {
+  // Mulai dari terbit, maju per 20 detik sampai tinggi matahari ≥ 4,5°.
+  let t = terbit.getTime();
+  for (let i = 0; i < 300; i++) {
+    if (posisiMatahari(new Date(t), LOKASI.lat, LOKASI.lng).tinggi >= 4.5) break;
+    t += 20000;
+  }
+  return keAtas(new Date(t + IHTIYATH * MENIT));
+}
 
 const MENIT = 60000;
 const keAtas = (d: Date) => new Date(Math.ceil(d.getTime() / MENIT) * MENIT);
@@ -79,7 +92,9 @@ export function jadwalHari(t: Tgl): Jadwal {
     asar: keAtas(pt.asr),
     magrib: keAtas(pt.maghrib),
     isya: keAtas(pt.isha),
+    duha: new Date(0),
   };
+  j.duha = hitungDuha(j.terbit);
   cache.set(k, j);
   return j;
 }
@@ -113,3 +128,25 @@ export const JARAK_KAABAH_KM = (() => {
   const a = Math.sin(dLat / 2) ** 2 + Math.cos(LOKASI.lat * r) * Math.cos(KAABAH.lat * r) * Math.sin(dLng / 2) ** 2;
   return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 })();
+
+export type WaktuKini = { kunci: KunciWaktu | 'duha'; teks: string; sampai: Date };
+
+/** Waktu yang sedang berjalan dan kapan berakhir, untuk satu kalimat di beranda. */
+export function waktuSekarang(now: Date, hariIni: Tgl, jumat: boolean): WaktuKini {
+  const j = jadwalHari(hariIni);
+  const t = now.getTime();
+  const fmt = (d: Date) => {
+    const x = new Date(d.getTime() + 7 * 3600e3);
+    return `${String(x.getUTCHours()).padStart(2, '0')}.${String(x.getUTCMinutes()).padStart(2, '0')}`;
+  };
+  const zuhur = jumat ? 'Jumat' : 'Zuhur';
+  if (t < j.subuh.getTime()) return { kunci: 'isya', teks: `Sekarang waktu Isya · sampai Subuh ${fmt(j.subuh)}`, sampai: j.subuh };
+  if (t < j.terbit.getTime()) return { kunci: 'subuh', teks: `Sekarang waktu Subuh · sampai terbit ${fmt(j.terbit)}`, sampai: j.terbit };
+  if (t < j.duha.getTime()) return { kunci: 'terbit', teks: `Matahari sedang naik · Duha mulai ${fmt(j.duha)}`, sampai: j.duha };
+  if (t < j.zuhur.getTime()) return { kunci: 'duha', teks: `Sekarang waktu Duha · ${zuhur} masuk ${fmt(j.zuhur)}`, sampai: j.zuhur };
+  if (t < j.asar.getTime()) return { kunci: 'zuhur', teks: `Sekarang waktu ${zuhur} · sampai Asar ${fmt(j.asar)}`, sampai: j.asar };
+  if (t < j.magrib.getTime()) return { kunci: 'asar', teks: `Sekarang waktu Asar · sampai Magrib ${fmt(j.magrib)}`, sampai: j.magrib };
+  if (t < j.isya.getTime()) return { kunci: 'magrib', teks: `Sekarang waktu Magrib · sampai Isya ${fmt(j.isya)}`, sampai: j.isya };
+  const besok = jadwalHari(tambahHari(hariIni, 1));
+  return { kunci: 'isya', teks: `Sekarang waktu Isya · sampai Subuh ${fmt(besok.subuh)}`, sampai: besok.subuh };
+}
